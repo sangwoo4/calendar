@@ -1,10 +1,17 @@
 import React, { useState } from 'react';
 import { Icon } from '@iconify/react';
-import { format, addMonths, subMonths } from 'date-fns';
+import { format, addMonths, subMonths} from 'date-fns';
 import { startOfMonth, endOfMonth, startOfWeek, endOfWeek } from 'date-fns';
 import { isSameMonth, isSameDay, addDays} from 'date-fns';
 import "./_style.scss";
 import Modal from './Modal/Modal';
+
+const getDateKey = (date) => {
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    return `${year}-${month}-${day}`;
+  };
 
 const RenderHeader = ({ currentMonth, prevMonth, nextMonth }) => {
     return (
@@ -52,6 +59,26 @@ const RenderCells = ({ currentMonth, selectedDate, onDateClick }) => {
     let day = startDate;
     let formattedDate = '';
 
+    const readWorkValues = (date) => {
+        const currentDateKey = getDateKey(date);
+        const savedWorkValues = JSON.parse(localStorage.getItem(currentDateKey)) || [];
+        return savedWorkValues;
+    };
+
+    const calculateWage = (workEntries) => {
+        let totalWage = 0;
+
+        workEntries.forEach((workEntry) => {
+            const startTime = new Date(`2000-01-01T${workEntry.workStartTime}`);
+            const endTime = new Date(`2000-01-01T${workEntry.workEndTime}`);
+            const timeDifference = endTime - startTime;
+            const wage = (timeDifference / 3600000) * workEntry.inputAsset; // Calculate individual wage
+            totalWage += parseFloat(wage.toFixed(2)); // Add to total wage
+        });
+        if(totalWage === 0) return '';
+        else return totalWage.toFixed(0);
+    };
+
     while (day <= endDate) {
         for (let i = 0; i < 7; i++) {
             formattedDate = format(day, 'd');
@@ -59,17 +86,14 @@ const RenderCells = ({ currentMonth, selectedDate, onDateClick }) => {
             const isoDate = cloneDay.toISOString().split('T')[0];
             const yearMonthDay = isoDate.split('-').map(Number);
 
-            const workAsset = `work ${yearMonthDay[0]}-${yearMonthDay[1]}-${yearMonthDay[2] + 1}`;
-            const workSavedMoney = parseFloat(localStorage.getItem(workAsset)) || '';
-
             const expenditure = `expenditure ${yearMonthDay[0]}-${yearMonthDay[1]}-${yearMonthDay[2] + 1}`;
             const expenditureMoney = parseFloat(localStorage.getItem(expenditure)) || '';
 
             const incomeAsset = `income ${yearMonthDay[0]}-${yearMonthDay[1]}-${yearMonthDay[2] + 1}`;
             const incomeSavedMoney = parseFloat(localStorage.getItem(incomeAsset)) || '';
 
-            const weekWage = `weekwage ${yearMonthDay[0]}-${yearMonthDay[1]}-${yearMonthDay[2] + 1}`;
-            const weekSavedWage = parseFloat(localStorage.getItem(weekWage)) || '';
+            const savedWorkValues = readWorkValues(day);
+
 
             days.push(
                 <div
@@ -92,23 +116,18 @@ const RenderCells = ({ currentMonth, selectedDate, onDateClick }) => {
                     >
                         {formattedDate}
                     </span>
+
                     <div className='value-container'>
-                        {workSavedMoney !== 0 && (
-                            <span className='workvalue'> {workSavedMoney > 0 ? `+${workSavedMoney}` : workSavedMoney}</span>
-                        )}
+                    <span className='workvalue'> {calculateWage(savedWorkValues) > 0 ? `+${calculateWage(savedWorkValues)}`: calculateWage(savedWorkValues)} </span>
 
-                        {incomeSavedMoney !== 0 && (
-                            <span className='incomevalue'> {incomeSavedMoney > 0 ? `+${incomeSavedMoney}` : incomeSavedMoney}</span>
-                        )}
+            {incomeSavedMoney !== 0 && (
+                <span className='incomevalue'>{incomeSavedMoney > 0 ? `+${incomeSavedMoney}` : incomeSavedMoney}</span>
+            )}
 
-                        {expenditureMoney !== 0 && (
-                            <span className='expenditurevalue'>{expenditureMoney}</span>
-                        )}
-
-                        {weekSavedWage !== 0 && (
-                            <span className='weekwage'>{weekSavedWage > 0 ? `주휴수당 : ${weekSavedWage}` : weekSavedWage}</span>
-                        )}
-                    </div>
+            {expenditureMoney !== 0 && (
+                <span className='expenditurevalue'>{expenditureMoney}</span>
+            )}
+        </div>
                 </div>,
             );
             day = addDays(day, 1);

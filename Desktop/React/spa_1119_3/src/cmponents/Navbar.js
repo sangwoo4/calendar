@@ -5,24 +5,19 @@ import "./Navbar.css";
 export const Navbar = () => {
   const calculateTotalSum = () => {
     let sum = 0;
-  
+
     for (let key in localStorage) {
-      if (key.startsWith('work') || key.startsWith('expenditure') || key.startsWith('income')) {
-        const savedValue = localStorage.getItem(key) || '0';
-        const value = parseInt(savedValue, 10);
+      if (key.startsWith('work')) {
+        const totalSumValue = localStorage.getItem(key) || '0';
+        const totalSum = parseFloat(totalSumValue);
   
-        if (key.startsWith('expenditure')) {
-          sum += value;
-        } else {
-          sum += Math.max(0, value);
-        }
+        sum += totalSum;
       }
     }
-  
+
     return sum.toString();
   };
-  
-  
+
   const [currentAsset, setCurrentAsset] = useState(() => {
     return calculateTotalSum();
   });
@@ -31,7 +26,7 @@ export const Navbar = () => {
     const intervalId = setInterval(() => {
       setCurrentAsset(() => calculateTotalSum());
     }, 1000);
-  
+
     return () => clearInterval(intervalId);
   }, []);
 
@@ -45,10 +40,11 @@ export const Navbar = () => {
   const handleMyPageClick = () => {
     setIsMyPageOpen(!isMyPageOpen); // Toggle MyPage submenu
   };
+
   return (
     <nav role="navigation">
       <div id="menuToggle">
-        <input type="checkbox" checked={isMenuOpen} onChange={handleMenuToggle}/>
+        <input type="checkbox" checked={isMenuOpen} onChange={handleMenuToggle} />
         <span></span>
         <span></span>
         <span></span>
@@ -58,12 +54,12 @@ export const Navbar = () => {
             <b>현재 자산</b>
             <br/><br/>&nbsp;{currentAsset}원
           </li>
-          <li>  
+          <li>
             <NavLink to="/calendar">
               달력
             </NavLink>
           </li>
-          
+
           <li>
             <NavLink to="/analyze">
               분석
@@ -71,12 +67,12 @@ export const Navbar = () => {
           </li>
 
           <li>
-            <NavLink 
+            <NavLink
               onClick={handleMyPageClick}
             >
               마이페이지
             </NavLink>
-            {isMyPageOpen &&  (
+            {isMyPageOpen && (
               <ul>
                 <li>
                   <NavLink to="/mypageWork">근무</NavLink>
