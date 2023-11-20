@@ -1,0 +1,19 @@
+
+  .submenu{
+    display: flex;
+    justify-content: center; /* 가로 중앙 정렬 */
+    align-items: center; /* 세로 중앙 정렬 */
+    height: 100vh; /* 화면 높이 전체를 차지하도록 설정 */
+    text-align: center; /* 텍스트를 가운데 정렬 */
+    font-size: 12px; /* 원하는 글꼴 크기 설정 */
+  }
+
+
+  .home{
+    display: flex;
+    justify-content: center; /* 가로 중앙 정렬 */
+    align-items: center; /* 세로 중앙 정렬 */
+    height: 100vh; /* 화면 높이 전체를 차지하도록 설정 */
+    text-align: center; /* 텍스트를 가운데 정렬 */
+    font-size: 24px; /* 원하는 글꼴 크기 설정 */
+  }

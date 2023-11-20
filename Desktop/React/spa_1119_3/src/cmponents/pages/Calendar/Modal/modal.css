@@ -1,0 +1,149 @@
+/* modal.css */
+.modal {
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal.open {
+  display: flex;
+  
+}
+.expenditure{
+  background-color: pink;
+  border-color : pink;
+  border-radius: 5px;
+  padding:5px;
+  width : 100%;
+  display: block; /* 지출 버튼  css*/
+
+}
+.work{
+  background-color: pink;
+  border-color : pink;
+  border-radius: 5px;
+  padding:5px;
+  width : 100%;
+  display: block; /* 지출 버튼  css*/
+}
+.income{
+  background-color: pink;
+  border-color : pink;
+  border-radius: 5px;
+  width : 100%;
+  padding : 5px;
+  display: block; /*부가 수입 버튼 css*/
+}
+.modal-content {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  padding: 60px;
+  text-align: center;
+  position: fixed;
+  z-index: 2;
+  border-radius: 40px; /*동글동글*/
+  right:50%
+}
+
+.close {
+  position: fixed;
+  top: 280px;
+  right: 70px;        /*근무 지출 부가수입 페이지 x표*/
+  left:1px;
+  font-size: 27px;
+  cursor: pointer;
+}
+
+/*모달 창 열면 나오는 css */
+.expenditure-modal.open, .income-modal.open{
+  border-radius: 40px;
+  left:65%;
+  display: block;
+  height : 300px;
+  width : 200px;
+  text-align: center; 
+  font-weight: 600;
+  font-size : 20px;
+  letter-spacing: 5px;
+  z-index: 1;
+}
+
+.work-modal.open {
+  border-radius: 40px;
+  left:70%;
+  display: block;
+  height : 260px;
+  width : 260px;
+  text-align: center; 
+  font-weight: 600;
+  font-size : 20px;
+  letter-spacing: 4px;
+  
+}
+
+
+.Work-content, .Expenditure-content, .Income-content{
+  font-size:15px;
+  letter-spacing: 2px;
+  text-align: center;
+  justify-content: center;
+  justify-items: center;
+  z-index: 1;
+}
+.date {
+  font-size : 25px;
+  font-weight: 600;
+  color : pink;
+  letter-spacing: 2px;
+}
+
+.text{
+  padding: 5px 30px 5px 5px;
+}
+.num{
+  padding : 5px 30px 5px 5px;
+}
+
+.work-modal, .expenditure-modal, .income-modal{
+  display: fixed;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #fff;
+  border-color: #fff;
+  border-radius: 100px; /*동글동글*/
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  padding : 100px;
+  justify-items: center;
+  align-items: center;
+}
+
+
+
+.btnOk{
+  background-color: pink;
+  border-color : pink;
+  border-radius: 5px;
+  width : 45%;
+  padding : 5px;
+  font-size:15px;
+}
+.btnCancel2{
+  background-color: pink;
+  border-color : pink;
+  border-radius: 5px;
+  width : 45%;
+  padding : 5px;
+  font-size:15px;
+}
+
