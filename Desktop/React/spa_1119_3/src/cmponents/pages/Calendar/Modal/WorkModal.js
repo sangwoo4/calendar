@@ -8,11 +8,27 @@ const WorkModal = ({ isOpen, closeModal, selectedDate }) => {
     return `${year}-${month}-${day}`;
   };
 
-  const getWorkDateKey = (date) => {
+  const getMonthKey = (date) => {
     const year = date.getFullYear();
     const month = date.getMonth() + 1;
-    const day = date.getDate();
-    return `work ${year}-${month}-${day}`;
+    return `${year}-${month}`;
+  };
+
+  const getYearMonthKey = (date) => {
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    return `work ${year}-${month}`;
+  };
+
+  const getWeekStartDate = (date) => {
+    const day = date.getDay(); // 0은 일요일, 1은 월요일, ..., 6은 토요일
+    const diff = date.getDate() - day + (day === 0 ? -6 : 1); // 일요일일 경우 일주일 전으로 이동
+    return new Date(date.setDate(diff));
+  };
+
+  const getWeekEndDate = (date) => {
+    const startOfWeek = getWeekStartDate(date);
+    return new Date(startOfWeek.setDate(startOfWeek.getDate() + 6));
   };
 
   const [workSource, setWorkSource] = useState('');
@@ -35,31 +51,19 @@ const WorkModal = ({ isOpen, closeModal, selectedDate }) => {
   const handleWorkEndTimeChange = (e) => {
     setWorkEndTime(e.target.value);
   };
+  
 
-  const handleSave = () => {
-    const workDateKey = getWorkDateKey(selectedDate);
-    const WorkDataKey = getDateKey(selectedDate);
-    const savedValues = JSON.parse(localStorage.getItem(WorkDataKey)) || [];
-  
-    const newWorkEntry = {
-      workSource: workSource,
-      inputAsset: inputAsset,
-      workStartTime: workStartTime,
-      workEndTime: workEndTime,
-    };
-  
-    const updatedValues = [...savedValues, newWorkEntry];
-    localStorage.setItem(WorkDataKey, JSON.stringify(updatedValues));
-  
-    // Calculate totalWage for the selected date
-    // Calculate totalWage for the whole month and store it in 'year-month' key
-    const startOfMonthDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
-    const endOfMonthDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0);
-  
+  const calculateTotalWageMonth = (values, startDate, endDate) => { //월 합산
     let totalWageMonth = 0;
-    updatedValues.forEach((entry) => {
-      const entryDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), parseInt(entry.workStartTime.split(":")[0]) + 1);
-      if (entryDate >= startOfMonthDate && entryDate <= endOfMonthDate) {
+
+    values.forEach((entry) => {
+      const entryDate = new Date(
+        selectedDate.getFullYear(),
+        selectedDate.getMonth(),
+        parseInt(entry.workStartTime.split(':')[0]) + 1
+      );
+
+      if (entryDate >= startDate && entryDate <= endDate) {
         const startTime = new Date(`2000-01-01T${entry.workStartTime}`);
         const endTime = new Date(`2000-01-01T${entry.workEndTime}`);
         const timeDifference = endTime - startTime;
@@ -67,17 +71,103 @@ const WorkModal = ({ isOpen, closeModal, selectedDate }) => {
         totalWageMonth += parseFloat(wage.toFixed(2));
       }
     });
+
+    return totalWageMonth;
+  };
+
+  const calculateWeeklyLeaveAllowance = (values, selectedDate) => {
+    let totalLeaveAllowance = 0;
+    let totalWorkHours = 0;
   
-    const yearMonthKey = `work ${selectedDate.getFullYear()}-${selectedDate.getMonth() + 1}`;
-    localStorage.setItem(yearMonthKey, totalWageMonth.toString());
+    // 주의 시작일과 끝일 계산
+    const startOfWeek = getWeekStartDate(selectedDate);
+    const endOfWeek = getWeekEndDate(selectedDate);
   
-    closeModal();
+    console.log("Selected Week Start Date: ", startOfWeek);
+    console.log("Selected Week End Date: ", endOfWeek);
+  
+    values.forEach((entry) => {
+      const entryDate = new Date(
+        selectedDate.getFullYear(),
+        selectedDate.getMonth(),
+        parseInt(entry.workStartTime.split(':')[0])
+      );
+  
+      if (entryDate >= startOfWeek && entryDate <= endOfWeek) {
+        const startTime = new Date(`2000-01-01T${entry.workStartTime}`).getTime();
+        const endTime = new Date(`2000-01-01T${entry.workEndTime}`).getTime();
+  
+        // Ensure endTime is greater than startTime
+        if (endTime > startTime) {
+          const timeDifference = endTime - startTime;
+  
+          // Calculate leave allowance based on time difference
+          const leaveAllowance = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+          totalLeaveAllowance += parseFloat((leaveAllowance * entry.inputAsset).toFixed(2));
+  
+          // Accumulate total work hours in the week
+          totalWorkHours += timeDifference / (1000 * 60 * 60);
+        }
+      }
+    });
+  
+    // Check if the total work hours in the week exceed 15 hours
+    if (totalWorkHours >= 15) {
+      // Calculate and add weekly leave allowance
+      const numberOfWorkingDays = 5; // 근무일 수가 다양한 경우 이 값을 업데이트하세요
+      const excessWorkHours = totalWorkHours - 15;
+      const excessLeaveAllowance = excessWorkHours * values[0].inputAsset; // inputAsset이 모든 항목에서 동일하다고 가정
+      totalLeaveAllowance += parseFloat(excessLeaveAllowance.toFixed(2));
+    }
+  
+    console.log(`totalLeaveAllowance ${totalLeaveAllowance}`);
+    console.log(`totalWorkHours ${totalWorkHours}`);
+  
+    return totalLeaveAllowance;
   };
   
   
+  
+  
+  
+
+  const handleSave = () => {
+    const workDataKey = getDateKey(selectedDate);
+    const workMonthKey = getMonthKey(selectedDate);
+    const workYearMonthKey = getYearMonthKey(selectedDate);
+    const savedValues = JSON.parse(localStorage.getItem(workDataKey)) || [];
+
+    const newWorkEntry = {
+      workSource: workSource,
+      inputAsset: parseFloat(inputAsset),
+      workStartTime: workStartTime,
+      workEndTime: workEndTime,
+    };
+
+    const updatedValues = [...savedValues, newWorkEntry];
+    localStorage.setItem(workDataKey, JSON.stringify(updatedValues));
+
+    const startOfMonthDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
+    const endOfMonthDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0);
+
+    const totalWageMonth = calculateTotalWageMonth(updatedValues, startOfMonthDate, endOfMonthDate);
+
+    // const existingMonthData = parseFloat(localStorage.getItem(workMonthKey)) || 0;
+    // const updatedMonthData = existingMonthData + totalWageMonth;
+    // localStorage.setItem(workMonthKey, updatedMonthData.toString());
+
+    const existingYearMonthData = parseFloat(localStorage.getItem(workYearMonthKey)) || 0;
+    const updatedYearMonthData = existingYearMonthData + totalWageMonth;
+    localStorage.setItem(workYearMonthKey, updatedYearMonthData.toString());
+
+    const totalLeaveAllowance = calculateWeeklyLeaveAllowance(updatedValues, selectedDate);
+    console.log('Allownce:' + totalLeaveAllowance);
+  
+    closeModal();
+  };
   useEffect(() => {
-    const WorkDataKey = getDateKey(selectedDate);
-    const savedValues = JSON.parse(localStorage.getItem(WorkDataKey)) || [];
+    const workDataKey = getDateKey(selectedDate);
+    const savedValues = JSON.parse(localStorage.getItem(workDataKey)) || [];
 
     // Other initialization logic...
   }, [selectedDate, isOpen]);

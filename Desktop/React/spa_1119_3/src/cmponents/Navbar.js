@@ -10,7 +10,7 @@ export const Navbar = () => {
       if (key.startsWith('work')) {
         const totalSumValue = localStorage.getItem(key) || '0';
         const totalSum = parseFloat(totalSumValue);
-  
+        
         sum += totalSum;
       }
     }
